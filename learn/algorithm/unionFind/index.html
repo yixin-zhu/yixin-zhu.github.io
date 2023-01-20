@@ -214,7 +214,7 @@
   
     <li class="md-nav__item">
       <a href="../../.." class="md-nav__link">
-        Eat
+        Homepage
       </a>
     </li>
   
@@ -302,9 +302,81 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Union Find
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         Union Find
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#dynamic-connectivity" class="md-nav__link">
+    Dynamic connectivity
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-find" class="md-nav__link">
+    Quick Find
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-union" class="md-nav__link">
+    Quick Union
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#union-find_1" class="md-nav__link">
+    Union Find
+  </a>
+  
+    <nav class="md-nav" aria-label="Union Find">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#improvement1-weighting" class="md-nav__link">
+    Improvement1: Weighting
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#improvement2-path-compression" class="md-nav__link">
+    Improvement2: path compression
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -359,6 +431,62 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#dynamic-connectivity" class="md-nav__link">
+    Dynamic connectivity
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-find" class="md-nav__link">
+    Quick Find
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-union" class="md-nav__link">
+    Quick Union
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#union-find_1" class="md-nav__link">
+    Union Find
+  </a>
+  
+    <nav class="md-nav" aria-label="Union Find">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#improvement1-weighting" class="md-nav__link">
+    Improvement1: Weighting
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#improvement2-path-compression" class="md-nav__link">
+    Improvement2: path compression
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -374,6 +502,125 @@
 
 
 <h1 id="union-find">Union Find</h1>
+<h2 id="dynamic-connectivity">Dynamic connectivity</h2>
+<pre><code class="language-java">public class UF{
+    UF(int N) //initialize union-find data structure with N objects (0 to N – 1)
+
+    // Find query.  Check if two objects are in the same component.
+    boolean connected(int p, int q) // are p and q in the same component?
+
+    // Union command.  Replace components containing two objects with their union.
+    void union(int p, int q) add connection between p and q
+}
+
+</code></pre>
+<h2 id="quick-find">Quick Find</h2>
+<p>Data structure.
+- Integer array id[] of length N.
+- Interpretation:  p and q are connected iff they have the same id.</p>
+<pre><code class="language-java">// O(1)
+public boolean connected(int p, int q) 
+   {  return id[p] == id[q];  }
+
+// O(N)
+public void union(int p, int q){
+   {
+      int pid = id[p];
+      int qid = id[q];
+      for (int i = 0; i &lt; id.length; i++) 
+         if (id[i] == pid) id[i] = qid;
+   }
+}
+</code></pre>
+<h2 id="quick-union">Quick Union</h2>
+<p>Data structure.
+- Integer array id[] of length N.
+- Interpretation:  id[i] is parent of i. ɾRoot of i is id[id[id[...id[i]...]]].</p>
+<pre><code class="language-java">private int root(int i)
+   {
+      while (i != id[i]) i = id[i];  // go to root
+      return i;
+   }
+
+// O(N)
+public boolean connected(int p, int q) 
+   {  return root(p) == root(q);  }
+
+// O(N)
+public void union(int p, int q){
+   {
+      int i = root(p);
+      int j = root(q);
+      id[i] = j;
+   }
+}
+</code></pre>
+<h2 id="union-find_1">Union Find</h2>
+<h3 id="improvement1-weighting">Improvement1: Weighting</h3>
+<p>Weighted quick-union.
+- Modify quick-union to avoid tall trees.
+- Keep track of size of each tree (number of objects). 
+- Balance by linking root of smaller tree to root of larger tree.</p>
+<p>Data structure. 
+- Same as quick-union, but maintain extra array sz[i] to count number of objects in the tree rooted at i.</p>
+<pre><code class="language-java">private int root(int i)
+   {
+      while (i != id[i]) i = id[i];  // go to root
+      return i;
+   }
+
+// O(lgN) This is because Depth of any node x is at most lg N.
+public boolean connected(int p, int q) 
+   {  return root(p) == root(q);  }
+
+// O(lgN)
+public void union(int p, int q){
+   {
+      int i = root(p);
+      int j = root(q);
+      if (i == j) return;
+      if  (sz[i] &lt; sz[j]) { id[i] = j; sz[j] += sz[i]; } 
+      else                { id[j] = i; sz[i] += sz[j]; }
+   }
+}
+</code></pre>
+<h3 id="improvement2-path-compression">Improvement2: path compression</h3>
+<p>Quick union with path compression.<br />
+- Just after computing the root of p, set the id of each examined node to point to that root.</p>
+<p>Data structure. 
+- Same as quick-union, but maintain extra array sz[i] to count number of objects in the tree rooted at i.</p>
+<pre><code class="language-java">private int root(int i)
+   {
+      while (i != id[i]){
+        id[i] = id[id[i]]; // only one extra code! In practice, just set the node to its grandparent, no need to root.
+        i = id[i];
+      }   
+      return i;
+   }
+
+// O(lgN) This is because Depth of any node x is at most lg N.
+public boolean connected(int p, int q) 
+   {  return root(p) == root(q);  }
+
+// O(lgN)
+public void union(int p, int q){
+   {
+      int i = root(p);
+      int j = root(q);
+      if (i == j) return;
+      if  (sz[i] &lt; sz[j]) { id[i] = j; sz[j] += sz[i]; } 
+      else                { id[j] = i; sz[i] += sz[j]; }
+   }
+}
+</code></pre>
+<p>Proposition.  </p>
+<p>[Hopcroft-Ulman, Tarjan]<br />
+Starting from an empty data structure, any sequence of M union-find operationss on N objects makes ≤  c ( N + M lg<em> N ) array accesses.  (log</em> is iterate log)</p>
+<ul>
+<li>Analysis can be improved to N + M α(M, N).</li>
+<li>Simple algorithm with fascinating mathematics.</li>
+<li>In practice, WQUPC is near linear!</li>
+</ul>
 
 
 
